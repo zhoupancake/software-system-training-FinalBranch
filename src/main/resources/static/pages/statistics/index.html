@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>答题统计</title>
+    <link rel="stylesheet" href="./index.css">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+
+</head>
+<body>
+<div id="app">
+    <h3>问卷名称：{{questionnaireName}}</h3>
+    <div id="main-container">
+        <el-row class="row-box" style="width: 80%" :key="item.id" v-for="(item, index) in questionData">
+            <div >
+                <el-col :span="24">
+                    <div :id="'question-box' + index"  v-show="!item.isTable">
+                    </div>
+                    <div v-if="item.isTable">
+                        <div style="display: flex; justify-content: space-between">
+                            <span>第{{index + 1}}题：{{item.name}}</span>
+                            <el-link @click="clickSameQuestion(index)" >同类问题统计</el-link>
+                        </div>
+                        <el-table :data="item.option">
+                            <el-table-column prop="chooseTerm" label="选项">
+                            </el-table-column>
+                            <el-table-column  label="小计" prop="personCount">
+                            </el-table-column>
+                            <el-table-column label="比例">
+                                <template slot-scope="scope">
+                                    <el-progress
+                                            style="width: 80%"
+                                            :stroke-width="10"
+                                            :percentage="scope.row.personCount/item.answerCount?(scope.row.personCount/item.answerCount *100).toFixed(2): 0 "
+                                    ></el-progress>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </div>
+
+                </el-col>
+               <el-col :span="24">
+                <div style="display: flex; justify-content: space-between">
+                    <div>
+                        <span>本题有效填写人数：</span>
+                        <el-tag>{{item.answerCount}}人</el-tag>
+                    </div>
+                    <div>
+                        <el-radio-group v-model="item.activeName" @change="handleButtonClick(index, item.activeName)"   size="small">
+                            <el-radio-button label="table" @change>表格</el-radio-button>
+                            <el-radio-button label="pie" >饼状</el-radio-button>
+                            <el-radio-button label="ring">圆环</el-radio-button>
+                            <el-radio-button label="bar">柱状</el-radio-button>
+                            <el-radio-button label="strip">条形</el-radio-button>
+                            <el-radio-button label="broke">折线</el-radio-button>
+                        </el-radio-group>
+                    </div>
+                </div>
+                </el-col>
+<!--                <el-col :span="24">-->
+<!--                    <el-collapse  v-if="item?.sameQuestions">-->
+<!--                        <el-collapse-item :title="'相同题目数：' + item?.sameQuestions.total"  name="1">-->
+<!--                            <div v-if="item?.sameQuestions.total !== 0">-->
+<!--                                <p v-for="o in item.sameQuestions.data">-->
+<!--                                    相同题目所在问卷：<el-tag  type="info" size="small">{{o.questionnaireName}}</el-tag><br/>-->
+<!--                                    相同题目答题人数：<el-tag type="success" size="small">{{o.count}}人</el-tag>-->
+<!--                                </p>-->
+<!--                            </div>-->
+<!--                        </el-collapse-item>-->
+<!--                    </el-collapse>-->
+<!--                </el-col>-->
+            </div>
+        </el-row>
+        <el-row>
+            <el-button style="margin: 5rem" @click="handleClickBack" type="primary">返回</el-button>
+        </el-row>
+        <el-dialog :visible.sync="dialogVisible" :title="sameQuestionStat.name" center>
+            <el-row class="row-box" style="width: 80%"  >
+                <div >
+                    <el-col :span="24">
+                        <div id="question-dialog"  v-show="!sameQuestionStat.isTable">
+                        </div>
+                        <div v-if="sameQuestionStat.isTable">
+                            <el-table :data="sameQuestionStat.option">
+                                <el-table-column prop="chooseTerm" label="选项">
+                                </el-table-column>
+                                <el-table-column  label="小计" prop="personCount">
+                                </el-table-column>
+                                <el-table-column label="比例">
+                                    <template slot-scope="scope">
+                                        <el-progress
+                                                style="width: 80%"
+                                                :stroke-width="10"
+                                                :percentage="scope.row.personCount/sameQuestionStat.answerCount?(scope.row.personCount/sameQuestionStat.answerCount *100).toFixed(2): 0 "
+                                        ></el-progress>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </div>
+
+                    </el-col>
+                    <el-col :span="24">
+                        <div style="display: flex; justify-content: space-between">
+                            <div>
+                                <span>本题有效填写人数：</span>
+                                <el-tag>{{sameQuestionStat.answerCount}}人</el-tag>
+                            </div>
+                            <div>
+                                <el-radio-group type="success" v-model="sameQuestionStat.activeName" @change="handleDialogRadioClick(sameQuestionStat.activeName)"  size="small">
+                                    <el-radio-button label="table" @change>表格</el-radio-button>
+                                    <el-radio-button label="pie" >饼状</el-radio-button>
+                                    <el-radio-button label="ring">圆环</el-radio-button>
+                                    <el-radio-button label="bar">柱状</el-radio-button>
+                                    <el-radio-button label="strip">条形</el-radio-button>
+                                    <el-radio-button label="broke">折线</el-radio-button>
+                                </el-radio-group>
+                            </div>
+                        </div>
+                    </el-col>
+                </div>
+            </el-row>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogVisible = false" type="danger">关 闭</el-button>
+
+            </span>
+        </el-dialog>
+    </div>
+
+</div>
+</body>
+<script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts-gl/dist/echarts-gl.min.js"></script>
+<script type="application/javascript" src="./index.js"></script>
+</html>
